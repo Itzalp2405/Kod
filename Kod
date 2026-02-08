@@ -1,0 +1,435 @@
+< !DOCTYPE html >
+< html lang="tr" >
+< head >
+< meta charset="UTF-8" >
+< meta name="viewport" content="width=device-width, initial-scale=1.0" >
+< title >Ücretsiz Kod Editörü< /title >
+< link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css" >
+< link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css" >
+< style >
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+min-height: 100vh;
+padding: 20px;
+}
+
+.container {
+max-width: 1400px;
+margin: 0 auto;
+background: white;
+border-radius: 15px;
+box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+overflow: hidden;
+}
+
+header {
+background: #2c3e50;
+color: white;
+padding: 20px 30px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.logo {
+font-size: 28px;
+font-weight: bold;
+color: #3498db;
+}
+
+.controls {
+display: flex;
+gap: 10px;
+}
+
+button {
+padding: 10px 20px;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+font-weight: 600;
+transition: all 0.3s ease;
+}
+
+#runBtn {
+background: #2ecc71;
+color: white;
+}
+
+#runBtn:hover {
+background: #27ae60;
+transform: translateY(-2px);
+}
+
+#clearBtn {
+background: #e74c3c;
+color: white;
+}
+
+#clearBtn:hover {
+background: #c0392b;
+}
+
+#saveBtn {
+background: #3498db;
+color: white;
+}
+
+#saveBtn:hover {
+background: #2980b9;
+}
+
+.editor-container {
+display: flex;
+flex-wrap: wrap;
+min-height: 600px;
+}
+
+.code-panel {
+flex: 1;
+min-width: 300px;
+border-right: 1px solid #eee;
+}
+
+.panel-header {
+background: #34495e;
+color: white;
+padding: 10px 15px;
+font-weight: 600;
+}
+
+.CodeMirror {
+height: 500px;
+font-size: 16px;
+}
+
+.output-container {
+flex: 1;
+min-width: 300px;
+}
+
+#output {
+width: 100%;
+height: 500px;
+border: none;
+padding: 20px;
+background: #1e1e1e;
+color: #f8f8f2;
+font-family: 'Courier New', monospace;
+font-size: 14px;
+overflow-y: auto;
+}
+
+.tabs {
+display: flex;
+background: #2c3e50;
+}
+
+.tab {
+padding: 12px 25px;
+color: white;
+cursor: pointer;
+border-right: 1px solid #34495e;
+transition: background 0.3s;
+}
+
+.tab.active {
+background: #3498db;
+}
+
+.tab:hover {
+background: #34495e;
+}
+
+.tab-content {
+display: none;
+}
+
+.tab-content.active {
+display: block;
+}
+
+footer {
+text-align: center;
+padding: 20px;
+background: #f8f9fa;
+color: #666;
+border-top: 1px solid #eee;
+}
+
+.language-selector {
+margin: 10px;
+padding: 8px 15px;
+border-radius: 5px;
+border: 1px solid #ddd;
+}
+
+.preset-buttons {
+padding: 15px;
+background: #f8f9fa;
+border-bottom: 1px solid #eee;
+}
+
+.preset-btn {
+margin: 5px;
+background: #9b59b6;
+color: white;
+}
+
+@media (max-width: 768px) {
+.editor-container {
+flex-direction: column;
+}
+
+.code-panel {
+border-right: none;
+border-bottom: 1px solid #eee;
+}
+}
+< /style >
+< /head >
+< body >
+< div class="container" >
+< header >
+< div class="logo" >💻 KodLab< /div >
+< div class="controls" >
+< select id="languageSelector" class="language-selector" >
+< option value="htmlmixed" >HTML< /option >
+< option value="css" >CSS< /option >
+< option value="javascri pt" >JavaScript< /option >
+< option value="python" >Python< /option >
+< /select >
+< button id="runBtn" >▶ Çalıştır< /button >
+< button id="saveBtn" >💾 Kaydet< /button >
+< button id="clearBtn" >🗑️ Temizle< /button >
+< /div >
+< /header >
+
+< div class="preset-buttons" >
+< button class="preset-btn" data-preset="html" >HTML Örneği< /button >
+< button class="preset-btn" data-preset="css" >CSS Örneği< /button >
+< button class="preset-btn" data-preset="js" >JavaScript Örneği< /button >
+< button class="preset-btn" data-preset="counter" >Sayaç Uygulaması< /button >
+< /div >
+
+< div class="editor-container" >
+< div class="code-panel" >
+< div class="panel-header" >Kod Editörü< /div >
+< textarea id="codeEditor" >< /textarea >
+< /div >
+
+< div class="output-container" >
+< div class="tabs" >
+< div class="tab active" data-tab="output" >Çıktı< /div >
+< div class="tab" data-tab="console" >Konsol< /div >
+< div class="tab" data-tab="htmlview" >HTML Görünümü< /div >
+< /div >
+< div id="output" class="tab-content active" >< /div >
+< div id="console" class="tab-content" >< /div >
+< div id="htmlview" class="tab-content" >< /div >
+< /div >
+< /div >
+
+< footer >
+< p >💡 Özellikler: Kod çalıştırma, kaydetme, örnek kodlar, çoklu dil desteği< /p >
+< p >⚠️ Not: Kodlar tarayıcıda çalışır. Python kodu simülasyon içindir.< /p >
+< /footer >
+< /div >
+
+< scri pt src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js" >< /scri pt >
+< scri pt src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js" >< /scri pt >
+< scri pt src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js" >< /scri pt >
+< scri pt src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascri pt/javascri pt.min.js" >< /scri pt >
+< scri pt src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js" >< /scri pt >
+< scri pt src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js" >< /scri pt >
+< scri pt >
+// Editor başlatma
+const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+lineNumbers: true,
+mode: "htmlmixed",
+theme: "dracula",
+autoCloseTags: true,
+autoCloseBrackets: true,
+matchBrackets: true,
+indentUnit: 4,
+tabSize: 4,
+lineWrapping: true
+});
+
+// Başlangıç kodu
+const initialCode = `< !DOCTYPE html >
+< html >
+< head >
+< title >Merhaba Dünya< /title >
+< style >
+body {
+font-family: Arial, sans-serif;
+text-align: center;
+padding: 50px;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+color: white;
+}
+h1 {
+font-size: 3em;
+margin-bottom: 20px;
+}
+button {
+padding: 15px 30px;
+font-size: 18px;
+background: #2ecc71;
+color: white;
+border: none;
+border-radius: 8px;
+cursor: pointer;
+transition: transform 0.3s;
+}
+button:hover {
+transform: scale(1.05);
+}
+< /style >
+< /head >
+< body >
+< h1 >KodLab'a Hoş Geldiniz! 👋< /h1 >
+< p >Kodunuzu yazın ve "Çalıştır" butonuna tıklayın.< /p >
+< button onclick="alert('Merhaba! Kod çalışıyor!')" >Tıkla Bana< /button >
+< div id="demo" style="margin-top: 30px; font-size: 24px;" >< /div >
+
+< scri pt >
+document.getElementById('demo').innerHTML = 'JavaScript çalışıyor! ✅';
+console.log('Konsoldan merhaba!');
+< \\/scri pt >
+< /body >
+< /html >`;
+
+editor.setValue(initialCode);
+
+// Değişkenler
+const outputFrame = document.getElementById('output');
+const consoleOutput = document.getElementById('console');
+const htmlView = document.getElementById('htmlview');
+let consoleHistory = [];
+
+// Dil seçici
+document.getElementById('languageSelector').addEventListener('change', function(e) {
+const modeMap = {
+'htmlmixed': 'htmlmixed',
+'css': 'css',
+'javascri pt': 'javascri pt',
+'python': 'python'
+};
+editor.setOption('mode', modeMap[e.target.value]);
+});
+
+// Çalıştır butonu
+document.getElementById('runBtn').addEventListener('click', runCode);
+
+// Temizle butonu
+document.getElementById('clearBtn').addEventListener('click', function() {
+if (confirm('Tüm kodu temizlemek istediğinize emin misiniz?')) {
+editor.setValue('');
+outputFrame.innerHTML = '';
+consoleOutput.innerHTML = '';
+htmlView.innerHTML = '';
+consoleHistory = [];
+}
+});
+
+// Kaydet butonu
+document.getElementById('saveBtn').addEventListener('click', function() {
+const code = editor.getValue();
+const blob = new Blob([code], { type: 'text/plain' });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'kodlab-kodum.txt';
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
+alert('Kodunuz indirildi!');
+});
+
+// Tab geçişleri
+document.querySelectorAll('.tab').forEach(tab = > {
+tab.addEventListener('click', function() {
+const tabName = this.getAttribute('data-tab');
+
+// Tüm tab'ları deaktif et
+document.querySelectorAll('.tab').forEach(t = > t.classList.remove('active'));
+document.querySelectorAll('.tab-content').forEach(c = > c.classList.remove('active'));
+
+// Seçili tab'ı aktif et
+this.classList.add('active');
+document.getElementById(tabName).classList.add('active');
+});
+});
+
+// Örnek kod butonları
+document.querySelectorAll('.preset-btn').forEach(btn = > {
+btn.addEventListener('click', function() {
+const preset = this.getAttribute('data-preset');
+loadPreset(preset);
+});
+});
+
+// Kod çalıştırma fonksiyonu
+function runCode() {
+const code = editor.getValue();
+const language = document.getElementById('languageSelector').value;
+
+// Konsol temizleme
+consoleHistory = [];
+consoleOutput.innerHTML = '';
+
+try {
+if (language === 'htmlmixed') {
+// HTML/CSS/JS kodu için
+outputFrame.innerHTML = code;
+
+// HTML görünümü
+htmlView.textContent = code;
+
+// Konsol çıktısını yakala
+const originalConsoleLog = console.log;
+console.log = function(...args) {
+consoleHistory.push(args.join(' '));
+originalConsoleLog.apply(console, args);
+};
+
+// Kod içindeki scri pt'leri çalıştır
+const scri pts = outputFrame.getElementsByTagName('scri pt');
+for (let scri pt of scri pts) {
+try {
+eval(scri pt.innerHTML);
+} catch (e) {
+consoleHistory.push('Hata: ' + e.message);
+}
+}
+
+// Konsol çıktısını göster
+consoleOutput.innerHTML = consoleHistory.map(msg = >
+`< div style="padding: 5px 10px; border-bottom: 1px solid #444; color: #2ecc71;" >
+> ${msg}< /div >`
+).join('');
+
+// Orijinal console.log'u geri yükle
+console.log = originalConsoleLog;
+
+} else if (language === 'python') {
+// Python benzeri çıktı (simülasyon)
+const pythonCode = code.toLowerCase();
+if (pythonCode.includes('print')) {
+const matches = code.match(/print\(["'](.+)["']\)/);
+if (matches) {
+outputFrame.innerHTML = `< pre style="color: white;" >${matches[1]}< /pre >`;
+}
+}
+htmlView.textContent = "Python kodu: " + code;
+consoleOutput.innerHTML = `< div style="padding: 10px; color: #3498
